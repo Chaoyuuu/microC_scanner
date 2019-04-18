@@ -4,6 +4,7 @@
 	#include <stdlib.h>
 	int line_num = 0;
 	int commemt_num = 0;
+	int flag = 0;
 %}
 
 /* Define regular expression label */
@@ -37,12 +38,16 @@ ws 			[ \t]+
 <CMT>.  	{ printf("%s", yytext);}
 <CMT>"*/"  	{ BEGIN(INITIAL); printf("%s \t C Comment\n", yytext); commemt_num++;}
 
-"\"" 		{ BEGIN(QUO); printf("%s \t QUOTA\n",yytext); }
-<QUO>"\\" 	{ BEGIN(Q1); printf("%s",yytext); }
-<QUO>"\"" 	{ BEGIN(INITIAL); printf(" \t STR_CONST\n%s \t QUOTA\n",yytext); }
-<QUO>.		{ printf("%s", yytext); }
+"\"" 		{ BEGIN(QUO); printf("%s \t QUOTA\n",yytext); flag = 0;}
+<QUO>[\\].		{ printf("%s", yytext); flag = 1;}
+<QUO>[^\"]		{ printf("%s",yytext); flag = 1;}
+<QUO>"\"" 	{ BEGIN(INITIAL); 
+			  if(flag == 1)
+			  	printf(" \t STR_CONST\n"); 
+			  printf("%s \t QUOTA\n",yytext);}
 
-<Q1>.	{BEGIN(QUO); printf("%s",yytext);}
+
+
 
 " "		{;}
 \t 		{;}
